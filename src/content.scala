@@ -3,7 +3,7 @@ package com.cterm2.tetra
 // Tetrahedron Framework: Content Registration Helper
 object ContentRegistry
 {
-	import net.minecraft.item.Item, net.minecraft.block.Block, net.minecraft.tileentity.TileEntity
+	import net.minecraft.item.{Item, ItemBlock}, net.minecraft.block.Block, net.minecraft.tileentity.TileEntity
 	import cpw.mods.fml.common.registry.GameRegistry
 
 	sealed trait INameableRegister
@@ -16,7 +16,12 @@ object ContentRegistry
 	}
 	final class BlockRegister(val block: Block) extends INameableRegister
 	{
+		def in[T <: ItemBlock](ibclass: Class[T]) = new CustomContainmentBlockRegister(block, ibclass)
 		override def as(name: String) = GameRegistry.registerBlock(block.setBlockName(name), name)
+	}
+	final class CustomContainmentBlockRegister(val block: Block, val ibclass: Class[_ <: ItemBlock]) extends INameableRegister
+	{
+		override def as(name: String) = GameRegistry.registerBlock(block.setBlockName(name), ibclass, name)
 	}
 	final class TileEntityRegister(val teClass: Class[_ <: TileEntity]) extends INameableRegister
 	{

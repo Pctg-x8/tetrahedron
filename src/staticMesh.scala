@@ -26,12 +26,13 @@ package object StaticMeshData
 		def renderAllFaces() = mesh.renderFaceYPos.renderFaceYNeg.renderFaceXZ
 		def renderFaceXZ() = mesh.renderFaceXPos.renderFaceXNeg.renderFaceZPos.renderFaceZNeg
 	}
+
 	implicit class RenderableObjectMethods(val mesh: StaticMesh) extends AnyVal
 	{
 		import net.minecraft.block.Block, net.minecraft.client.renderer.RenderBlocks
 		import net.minecraft.world.IBlockAccess
 
-		def render(world: IBlockAccess, block: Block, x: Int, y: Int, z: Int, renderer: RenderBlocks, yLit: Float, xLit: Float, zLit: Float, r: Float, g: Float, b: Float)
+		def render(world: IBlockAccess, block: Block, meta: Int, x: Int, y: Int, z: Int, renderer: RenderBlocks, yLit: Float, xLit: Float, zLit: Float, r: Float, g: Float, b: Float)
 		{
 			val tess = net.minecraft.client.renderer.Tessellator.instance
 			val lit = block.getMixedBrightnessForBlock(world, x, y, z)
@@ -42,38 +43,30 @@ package object StaticMeshData
 				case RenderFaceX(neg) if neg =>
 					tess.setBrightness(if(renderer.renderMinX > 0.0d) lit else block.getMixedBrightnessForBlock(world, x - 1, y, z))
 					tess.setColorOpaque_F(xLit * r, xLit * g, xLit * b)
-					renderer.renderFaceXNeg(block, x, y, z, block.getBlockTextureFromSide(4))
+					renderer.renderFaceXNeg(block, x, y, z, block.getIcon(4, meta))
 				case RenderFaceX(neg) if !neg =>
 					tess.setBrightness(if(renderer.renderMaxX < 1.0d) lit else block.getMixedBrightnessForBlock(world, x + 1, y, z))
 					tess.setColorOpaque_F(xLit * r, xLit * g, xLit * b)
-					renderer.renderFaceXPos(block, x, y, z, block.getBlockTextureFromSide(5))
+					renderer.renderFaceXPos(block, x, y, z, block.getIcon(5, meta))
 				case RenderFaceY(neg) if neg =>
 					tess.setBrightness(if(renderer.renderMinY > 0.0d) lit else block.getMixedBrightnessForBlock(world, x, y - 1, z))
 					tess.setColorOpaque_F(yLit * r, yLit * g, yLit * b)
-					renderer.renderFaceYNeg(block, x, y, z, block.getBlockTextureFromSide(0))
+					renderer.renderFaceYNeg(block, x, y, z, block.getIcon(0, meta))
 				case RenderFaceY(neg) if !neg =>
 					tess.setBrightness(if(renderer.renderMaxY < 1.0d) lit else block.getMixedBrightnessForBlock(world, x, y + 1, z))
 					tess.setColorOpaque_F(r, g, b)
-					renderer.renderFaceYPos(block, x, y, z, block.getBlockTextureFromSide(1))
+					renderer.renderFaceYPos(block, x, y, z, block.getIcon(1, meta))
 				case RenderFaceZ(neg) if neg =>
 					tess.setBrightness(if(renderer.renderMinZ > 0.0d) lit else block.getMixedBrightnessForBlock(world, x, y, z - 1))
 					tess.setColorOpaque_F(zLit * r, zLit * g, zLit * b)
-					renderer.renderFaceZNeg(block, x, y, z, block.getBlockTextureFromSide(2))
+					renderer.renderFaceZNeg(block, x, y, z, block.getIcon(2, meta))
 				case RenderFaceZ(neg) if !neg =>
 					tess.setBrightness(if(renderer.renderMaxZ < 1.0d) lit else block.getMixedBrightnessForBlock(world, x, y, z + 1))
 					tess.setColorOpaque_F(zLit * r, zLit * g, zLit * b)
-					renderer.renderFaceZPos(block, x, y, z, block.getBlockTextureFromSide(3))
+					renderer.renderFaceZPos(block, x, y, z, block.getIcon(3, meta))
 			}
 		}
-        def renderYNeg(block: Block, x: Int, y: Int, z: Int, renderer: RenderBlocks)
-        {
-            mesh foreach
-            {
-                case RenderFaceY(neg) if neg == false => renderer.renderFaceYNeg(block, x, y, z, block.getBlockTextureFromSide(0))
-                case _ => ()
-            }
-        }
-		def renderWithNormals(block: Block, renderer: RenderBlocks)
+		def renderWithNormals(block: Block, meta: Int, renderer: RenderBlocks)
 		{
 			val tess = net.minecraft.client.renderer.Tessellator.instance
 
@@ -83,20 +76,20 @@ package object StaticMeshData
 				case RenderFaceX(neg) =>
 					tess.startDrawingQuads()
 					tess.setNormal(if(neg) -1.0f else 1.0f, 0.0f, 0.0f)
-					if(neg) renderer.renderFaceXNeg(block, 0, 0, 0, block.getBlockTextureFromSide(4))
-					else renderer.renderFaceXPos(block, 0, 0, 0, block.getBlockTextureFromSide(5))
+					if(neg) renderer.renderFaceXNeg(block, 0, 0, 0, block.getIcon(4, meta))
+					else renderer.renderFaceXPos(block, 0, 0, 0, block.getIcon(5, meta))
 					tess.draw()
 				case RenderFaceY(neg) =>
 					tess.startDrawingQuads()
 					tess.setNormal(0.0f, if(neg) -1.0f else 1.0f, 0.0f)
-					if(neg) renderer.renderFaceYNeg(block, 0, 0, 0, block.getBlockTextureFromSide(0))
-					else renderer.renderFaceYPos(block, 0, 0, 0, block.getBlockTextureFromSide(1))
+					if(neg) renderer.renderFaceYNeg(block, 0, 0, 0, block.getIcon(0, meta))
+					else renderer.renderFaceYPos(block, 0, 0, 0, block.getIcon(1, meta))
 					tess.draw()
 				case RenderFaceZ(neg) =>
 					tess.startDrawingQuads()
 					tess.setNormal(0.0f, 0.0f, if(neg) -1.0f else 1.0f)
-					if(neg) renderer.renderFaceZNeg(block, 0, 0, 0, block.getBlockTextureFromSide(2))
-					else renderer.renderFaceZPos(block, 0, 0, 0, block.getBlockTextureFromSide(3))
+					if(neg) renderer.renderFaceZNeg(block, 0, 0, 0, block.getIcon(2, meta))
+					else renderer.renderFaceZPos(block, 0, 0, 0, block.getIcon(3, meta))
 					tess.draw()
 			}
 		}

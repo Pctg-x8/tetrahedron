@@ -3,7 +3,8 @@ package com.cterm2.tetra
 // Tetrahedron Framework: Parametric-type based Active Record for Minecraft NBT
 object ActiveNBTRecord
 {
-	import net.minecraft.nbt.NBTTagCompound
+	import net.minecraft.nbt._
+	import net.minecraftforge.common.util.Constants
 
 	implicit class Record(val tag: NBTTagCompound) extends AnyVal
 	{
@@ -39,6 +40,10 @@ object ActiveNBTRecord
 	{
 		def set(tag: NBTTagCompound, key: String, value: NBTTagCompound) = tag.setTag(key, value)
 	}
+	implicit object ListSetter extends SetterImpl[NBTTagList]
+	{
+		def set(tag: NBTTagCompound, key: String, value: NBTTagList) = tag.setTag(key, value)
+	}
 
 	sealed trait GetterImpl[@specialized T]
 	{
@@ -62,6 +67,10 @@ object ActiveNBTRecord
 	}
 	implicit object TagGetter extends GetterImpl[NBTTagCompound]
 	{
-		override def get(tag: NBTTagCompound, key: String) = Option(tag.getTag(key).asInstanceOf[NBTTagCompound])
+		override def get(tag: NBTTagCompound, key: String) = Option(tag.getCompoundTag(key))
+	}
+	implicit object ListGetter extends GetterImpl[NBTTagList]
+	{
+		override def get(tag: NBTTagCompound, key: String) = Option(tag.getTagList(key, Constants.NBT.TAG_COMPOUND))
 	}
 }
